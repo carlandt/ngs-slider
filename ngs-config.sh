@@ -10,17 +10,25 @@
 refdir="/data/database/GATK/Grch37"
 ref="$refdir/ref.fasta"
 
-# note that the 142 version has been problematic - try 138 if it fails
+# note that the 142 version has been problematic, 138 works so far
 dbsnp_vcf="$refdir/dbsnp_138.b37.vcf"
 dbsnp_bed="$refdir/dbsnp_138.b37.bed"
-
-indel="$refdir/Mills_and_1000G_gold_standard.indels.b37.vcf"
+indel_vcf="$refdir/Mills_and_1000G_gold_standard.indels.b37.vcf"
 pharmGKB_bed="$refdir/genes-pharmgkb.bed"
 
 temp="/mnt/tristan/temp-$sample"
 
 cosmic="/data/storage/b37/b37_cosmic_v54_120711.vcf"
 
+care_list_bed="$refdir/clia-list.bed"
+
+####
+##
+job_thr=6
+job_ram=12G
+
+node_thr=8
+node_ram=16G
 
 ####
 ## Hg19

@@ -2,12 +2,11 @@
 ####
 ##  The complete NGS pipeline for sequence to variants with haplotypecaller and QC metrics
 ##   Made to take a given step and progress from there, good for faults and stops
-##   Also takes a config file as input, see bottom of script for template
 ##  Written by Tristan M. Carland, PhD (Avera, JCVI)
 ####
 if [ $# -lt 2 ]; then
   echo ""
-  echo " Tristan's NGS Scripts - Full NGS Slide v1.2 (GATK 3.3-0)"
+  echo " Tristan's NGS Scripts - Full NGS Slide v1.0 (GATK 3.3-0)"
   echo ""
   echo "  usage: `basename $0` <sample> <starting-sub-routine>"
   echo ""
@@ -42,9 +41,7 @@ tmp=temp-$sample
 
 ##
 # Most of the variables, as well as the finishCheck function, are saved in a config file
-#  in particular, the config file now saves the number of threads (num_thr) and max_ram settings
-#  - left as a separate file so that different machines could each have their own
-#  - in future releases, it may be best to make this a command line param, or perhaps not
+#  in particular, the config file now saves the number of threads (job_thr) and job_ram settings
 source ngs-config.sh
 
 # ## Starting timestamp
@@ -78,7 +75,7 @@ main () # called from the bottom so that the other functions are known
 bwa-mem ()
 {
 	echo "NGS-CMD - Begin bwa mem mapping" # includes basic readgroup info from sample name	
-	bwa mem -t $num_thr -M \
+	bwa mem -t $job_thr -M \
 	  -R '@RG\tID:'$sample'\tSM:'$sample'\tPL:illumina\tPU:ns500\tLB:1234' \
 	  $ref $sample-r1.fq.gz $sample-r2.fq.gz > $sample-1-raw.sam
 
@@ -103,7 +100,7 @@ samtools-fixmate ()
 sambamba-sort ()
 {
 	echo "NGS-CMD - Begin sambamba sort" # creates many many temporary files
-	sambamba sort -m $max_ram -t $num_thr -p -o $sample-3-s.bam $sample-2-fm.bam
+	sambamba sort -m $job_ram -t $job_thr -p -o $sample-3-s.bam $sample-2-fm.bam
 
 	finishCheck $? "sambamba sort"
 
@@ -146,8 +143,8 @@ samtools-index ()
 gatk-rtc ()
 {
 	echo "NGS-CMD - Start GATK RealignerTargetCreator" # known should include known indels
-	java -Xmx$max_ram -jar $gatk \
-	  -T RealignerTargetCreator -nt $num_thr \
+	java -Xmx$job_ram -jar $gatk \
+	  -T RealignerTargetCreator -nt $job_thr \
 	  -R $ref \
 	  --known $dbsnp_vcf \
 	  --known $indel_vcf \
@@ -162,7 +159,7 @@ gatk-rtc ()
 gatk-ir ()
 {
 	echo "NGS-CMD - Start GATK IndelRealigner" # knownAlleles should include known indels
-	java -Xmx$max_ram -jar $gatk \
+	java -Xmx$job_ram -jar $gatk \
 	  -T IndelRealigner \
 	  -R $ref \
 	  --knownAlleles $dbsnp_vcf \
@@ -185,8 +182,8 @@ gatk-ir ()
 gatk-br ()
 {
 	echo "NGS-CMD - Start GATK BaseRecalibrator" # knownSites should include any known variants
-	java -Xmx$max_ram -jar $gatk \
-	  -T BaseRecalibrator -nct $num_thr \
+	java -Xmx$job_ram -jar $gatk \
+	  -T BaseRecalibrator -nct $job_thr \
 	  -R $ref \
 	  --knownSites $dbsnp_vcf \
 	  --knownSites $indel_vcf \
@@ -201,8 +198,8 @@ gatk-br ()
 gatk-pr ()
 {
 	echo "NGS-CMD - Start GATK PrintReads" # uses info from the previous steps
-	java -Xmx$max_ram -jar $gatk \
-	  -T PrintReads -nct $num_thr \
+	java -Xmx$job_ram -jar $gatk \
+	  -T PrintReads -nct $job_thr \
 	  -R $ref \
 	  --BQSR $sample-5-ir.table \
 	  -I $sample-5-ir.bam \
@@ -240,8 +237,8 @@ gatk-callable ()
 gatk-hc ()
 {
 	echo "NGS-CMD - Start GATK HaplotypeCaller" # the genotyper
-	java -Xmx$max_ram -jar $gatk \
-	 -T HaplotypeCaller -nct $num_thr \
+	java -Xmx$job_ram -jar $gatk \
+	 -T HaplotypeCaller -nct $job_thr \
 	 -R $ref \
 	 --dbsnp $dbsnp_vcf \
 	 -I $sample-ready.bam \
@@ -368,7 +365,7 @@ gatk-variant-eval ()
 {
 	echo "NGS-CMD - Variant Evaluation"
 	java -Xmx4g -jar $gatk \
-	 -T VariantEval -nt $num_thr \
+	 -T VariantEval -nt $job_thr \
 	 -R $ref \
 	 --dbsnp $dbsnp_vcf \
 	 --goldStandard $indel_vcf \
@@ -393,7 +390,7 @@ exit 0 # end shell scripts with an exit for easier commenting at the en
 ### A note on parallelism in GATK ###
 http://gatkforums.broadinstitute.org/discussion/1975/recommendations-for-parallelizing-gatk-tools
 
-nt  = --num_threads - the number of data threads sent to the processor
+nt  = --job_threads - the number of data threads sent to the processor
 nct = -- num_cpu_threads_per_data_thread - the number of CPU threads allocated to each data thread
 - not that this changes a whole lot...
 
