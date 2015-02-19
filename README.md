@@ -42,5 +42,18 @@ Here are the other options
 | gatk-variant-eval      | -hard.vcf |
 
 ### Installation
+Getting the latest version should be simple enough, download above or:
+```git clone https://github.com/carlandt/ngs-slider.git```
 
-### Required Tools
+Then you'll want to configure the aws-config.sh file to match your system specifications. Note the tool paths, memory and thread counts are explained, and of course paths to your reference genome files.
+
+### Required Tools - Always get the latest
+Also, assuming you're running this from Linux/Unix.
+* [GATK v3.3-0+](https://www.broadinstitute.org/gatk/)
+* [Samtools v1.1+](http://www.htslib.org/)
+* [Sambamba v0.5+](http://lomereiter.github.io/sambamba/)
+* [Picard tools v1+](http://broadinstitute.github.io/picard/)
+* [Burrows-Wheeler Aligner v0.7+](http://sourceforge.net/projects/bio-bwa/files/)
+
+### Required Data
+Requires a version of the human genome that has been indexed with bwa and is compatible with the Genome Analysis ToolKit. I recommend downloading these directly from the GATK Resource Bundle - [link](https://www.broadinstitute.org/gatk/download/)
