@@ -3,9 +3,6 @@ My homebrew pipeline for taking next-gen sequencing data and finding decent vari
 
 Designed to follow the Best Practices page of the GATK website - [link](https://www.broadinstitute.org/gatk/guide/best-practices?bpm=DNAseq)
 
-
-
-
 When given a fastq file in bioinformatics, the goal is to run through a reasonable number of tools and eventually produce a vcf file. This program allows you to start from any one of those steps (provided you meet the naming conventions) and slide through the rest of the pipeline.
 
 This tool is a combination of two scripts and a series of bioinformatic tools.
