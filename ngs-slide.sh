@@ -43,7 +43,9 @@ tmp=temp-$sample
 ##
 # Most of the variables, as well as the finishCheck function, are saved in a config file
 #  in particular, the config file now saves the number of threads (num_thr) and max_ram settings
-source ngs-config-bbox.sh
+#  - left as a separate file so that different machines could each have their own
+#  - in future releases, it may be best to make this a command line param, or perhaps not
+source ngs-config.sh
 
 # ## Starting timestamp
 echo 'NGS-TIMESTAMP' `date`
@@ -125,8 +127,8 @@ picard-mark-duplicates ()
 	finishCheck $? "Picard Mark Duplicates"
 
 	# delete intermediate files and make a copy of the QC metrics
-	#rm $sample-3-s.bam
-	#rm $sample-3-s.bam.bai
+	rm $sample-3-s.bam
+	rm $sample-3-s.bam.bai
 
 	samtools-index # call the next tool
 }
