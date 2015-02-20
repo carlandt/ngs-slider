@@ -72,6 +72,9 @@ main () # called from the bottom so that the other functions are known
 	esac
 }
 
+##
+# successfully tested bwa mem | samblaster -r | samtools fixmate - -O bam $sample-fm.bam 
+#  should implement that here as the standard soon
 bwa-mem ()
 {
 	echo "NGS-CMD - Begin bwa mem mapping" # includes basic readgroup info from sample name	
